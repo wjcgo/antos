@@ -39,7 +39,7 @@
             </div>
 
         </div>
-        <ant-taskbar></ant-taskbar>
+        <ant-taskbar :screen="screen"></ant-taskbar>
     </div>
 </body>
 <!-- import Vue before Element -->
@@ -53,12 +53,26 @@
         el: '#app',
         data: function() {
             return {
+                screen:{
+                    width:0,
+                    height:0,
+                },
                 visible: false,
 
             }
         },
         methods: {
-
+            resize:function(){
+                this.screen.width = document.body.clientWidth;
+                this.screen.height = document.body.clientHeight;
+            }
+        },
+        created:function(){
+            var self = this
+            this.resize()
+            document.body.onresize = function(){
+                self.resize()
+            }
         }
     })
 </script>

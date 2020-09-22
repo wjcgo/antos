@@ -1,8 +1,9 @@
 // 定义一个名为 button-counter 的新组件
 Vue.component('ant-window', {
     props: {
-
+        currentwinid:Number,
         win: Object,
+        screen: Object,
 
     },
     data: function() {
@@ -32,8 +33,16 @@ Vue.component('ant-window', {
         win: {
             handler: function(win) {
                 console.log("win参数改变", win)
+                this.checkStyle()
             },
             deep: true,
+            immediate: true,
+        },
+        screen:{
+            handler:function(){
+                this.checkStyle()
+            },
+            deep:true,
             immediate: true,
         }
 
@@ -46,6 +55,8 @@ Vue.component('ant-window', {
                 <div class="ant-window-header-title" >{{win.title}}</div>
             </div>
             <div id="" class="ant-window-content"><iframe scrolling="auto" allowtransparency="true" id="ant-window-iframe34" name="ant-window-iframe34" onload="this.className='';" class="" frameborder="0" :src="url" :style="iframeStyle"></iframe>
+           
+            <div v-if="currentwinid!=win.id" @mousedown="contentDown" class="ant-window-content-mask"></div>
             </div><span class="ant-window-setwin">
                 <button @click="btnMin" class="ant-window-ctlbtn ant-window-min"  ><i class="iconfont iconzuixiaohua_huaban1" style="font-size:24px"></i></button>
                 <button @click="btnNormal" v-if="win.max" class="ant-window-ctlbtn ant-window-min" ><i class="iconfont iconhuifu_huaban1" style="font-size:24px"></i></button>
@@ -56,19 +67,24 @@ Vue.component('ant-window', {
         </div>
     `,
     methods: {
+
         mouseDown: function(e) {
             var self = this;
-            self.$emit('drag', true)
+
+            self.$emit('drag', {drag:true,win:this.win})
             self.dragInfo.x = e.offsetX;
             self.dragInfo.y = e.offsetY;
-            console.log(e)
-            self.style["z-index"] += 1
+            self.dragInfo.overX = this.win.left
+            self.dragInfo.overY = this.win.top
             document.addEventListener("mousemove", self.mouseMove);
             document.addEventListener("mouseup", self.mouseUp);
         },
         mouseUp: function(e) {
             var self = this;
-            this.$emit('drag', false)
+            
+            this.win.top = this.dragInfo.overY;
+            this.win.left = this.dragInfo.overX;
+            this.$emit('drag', {drag:false,win:this.win});
             document.removeEventListener("mousemove", self.mouseMove);
             document.removeEventListener("mouseup", self.mouseUp);
         },
@@ -76,27 +92,35 @@ Vue.component('ant-window', {
             var self = this;
             var x = e.clientX - self.dragInfo.x;
             var y = e.clientY - self.dragInfo.y;
-
+            this.dragInfo.overX = x
+            this.dragInfo.overY = y
             self.style.left = x + "px";
             self.style.top = y + "px";
         },
         resizeDown: function(e) {
             var self = this;
-            self.$emit('drag', true)
+            
+            self.dragInfo.width = this.win.width
+            self.dragInfo.height = this.win.height
             self.dragInfo.x = e.clientX;
             self.dragInfo.y = e.clientY;
-            var widthStr = this.style.width.replace("px", "")
-            var heightStr = this.style.height.replace("px", "")
-            self.dragInfo.width = parseInt(widthStr)
-            self.dragInfo.height = parseInt(heightStr)
-
-            // console.log(disX,disY)
+            self.dragInfo.overWidth = this.win.width
+            self.dragInfo.overHeight = this.win.height
+            self.$emit('drag', {drag:true,win:this.win})
             document.addEventListener("mousemove", self.resizeMove);
             document.addEventListener("mouseup", self.resizeUp);
         },
         resizeUp: function(e) {
             var self = this;
-            this.$emit('drag', false)
+            this.win.width = this.dragInfo.overWidth
+            this.win.height = this.dragInfo.overHeight
+            if (this.win.width<this.limit.width){
+                this.win.width = this.limit.width
+            }
+            if(this.win.height<this.limit.height){
+                this.win.height = this.limit.height
+            }
+            this.$emit('drag', {drag:false,win:this.win})
             document.removeEventListener("mousemove", self.resizeMove);
             document.removeEventListener("mouseup", self.resizeUp);
         },
@@ -104,31 +128,80 @@ Vue.component('ant-window', {
             var self = this;
             var width = self.dragInfo.width + e.clientX - self.dragInfo.x;
             var height = self.dragInfo.height + e.clientY - self.dragInfo.y;
-            if (width > self.limit.width) {
+            this.dragInfo.overWidth = width
+            this.dragInfo.overHeight = height
+            if (width >= self.limit.width) {
                 self.style.width = width + "px";
             }
-            if (height > self.limit.height) {
+            if (height >= self.limit.height) {
                 self.style.height = height + "px";
                 self.iframeStyle.height = height - 35 + "px"
             }
 
         },
+        contentDown:function(){
+            this.$emit('changewin', {current:true,win:this.win})
+        },
         /////控制界面通知
         btnMin: function() { //最小按钮
-            this.$emit("windowctl", { id: this.win.id, mold: "min" })
+            this.win.hide = true
+            this.$emit("changewin", { current: false, win: this.win })
         },
         btnNormal: function() { //窗口恢复正常模式
-            this.$emit("windowctl", { id: this.win.id, mold: "normal" })
+            this.win.max = false
+            this.$emit("changewin", { current: true, win: this.win })
 
         },
         btnMax: function() { //最大化
-            this.$emit("windowctl", { id: this.win.id, mold: "max" })
+            this.win.max = true
+            this.$emit("changewin", { current: true, win: this.win })
         },
-        btnCurrent: function() { //当前
-            this.$emit("windowctl", { id: this.win.id, mold: "current" })
-        },
+        
         btnClose: function() { //发送关闭信息
-            this.$emit("windowctl", { id: this.win.id, mold: "close" })
+      
+            this.$emit("changewin", { current: false, win: this.win, close:true })
+        },
+        //检测样式改变
+        checkStyle:function(){
+            if(this.win.max){//如果是最大窗口模式，无需改变
+                var top = 0 + "px";
+                if (this.style.top != top){
+                    this.style.top = top;
+                }
+                var left = 0 + "px";
+                if (this.style.left != left){
+                    this.style.left = left
+                } 
+                var width = this.screen.width + "px"
+                if (this.style.width != width){
+                    this.style.width = width
+                }
+                var height = this.screen.height + "px"
+                if (this.style.height != height){
+                    this.style.height = height
+                    this.iframeStyle.height = this.screen.height - 35 + "px"
+                }
+            }else{
+                var top = this.win.top + "px";
+                if (this.style.top != top){
+                    this.style.top = top;
+                }
+                var left = this.win.left + "px";
+                if (this.style.left != left){
+                    this.style.left = left
+                } 
+                var width = this.win.width + "px"
+                if (this.style.width != width){
+                    this.style.width = width
+                }
+                var height = this.win.height + "px"
+                if (this.style.height != height){
+                    this.style.height = height
+                    this.iframeStyle.height = this.win.height - 35 + "px"
+                }
+            }
+            
+            this.style["z-index"] = this.win.zIndex
         }
     },
     created: function() {
@@ -137,14 +210,14 @@ Vue.component('ant-window', {
             y: 0,
             width: 0,
             height: 0,
+            overX:0,
+            overY:0,
+            overWidth:0,
+            overHeight:0,
         }
-        console.log(this.win)
-        this.style.top = this.win.top + "px"
-        this.style.left = this.win.left + "px"
-        this.style.width = this.win.width + "px"
-        this.style.height = this.win.height + "px"
-        this.iframeStyle.height = this.win.height - 35 + "px"
-        this.style["z-index"] = this.win.zIndex
-        this.url = this.win.url
+     
+        this.checkStyle()
+        
+        
     }
 })

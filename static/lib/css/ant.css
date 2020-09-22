@@ -2181,13 +2181,25 @@ html #layuicss-layer {
     color: rgb(248, 245, 245);
     overflow: hidden;
     display: inline-block;
+    pointer-events: none;
 }
-
+.ant-window-content-mask {
+    position: absolute;
+    z-index: 2000;
+    background-color: hsla(0,0%,100%,0);
+    margin: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    
+}
 .ant-window-setwin {
     position: absolute;
     right: 0px;
     *right: 0;
     top: 0px;
+    z-index: 1;
     height: 34px;
     font-size: 0;
     line-height: 34px;
