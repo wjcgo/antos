@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <!-- import CSS -->
+    <title>蚂蚁系统</title>
+    <link rel="stylesheet" href="./lib/css/ant.css">
+
+    <link rel="stylesheet" href="./lib/element/elementui.css">
+    <link rel="stylesheet" href="./lib/font-awesome-4.7.0/css/font-awesome.css">
+
+    <link rel="stylesheet" href="./lib/iconfont/iconfont.css">
+
+    <style>
+        body {
+            /*在页面顶部加载背景最佳，如有必要这块可以从数据库读取*/
+            background-image: url(images/bg_01.jpg);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+
+        <!-- 桌面 -->
+        <div class="ant-desktop" style="height: 500px;">
+            <div class="ant-desktop-item" win-id="1" win-url="theme" win-title="主题" win-opentype="1" win-maxopen="-1" style="top: 0px; left: 0px;">
+                <div class="ant-icon ant-icon-font"><i class="iconfont iconzhuomian"></i></div>
+                <p>我的电脑</p>
+            </div>
+            <div class="ant-desktop-item" win-id="3" win-url="/home/reward" win-title="打赏作者" win-opentype="1" win-maxopen="-1" style="top: 96px; left: 0px;">
+                <div class="ant-icon ant-icon-font"><i class="iconfont iconie"></i></div>
+                <p>浏览器</p>
+            </div>
+            <div class="ant-desktop-item" win-id="4" win-url="views/demo/introduce.html" win-title="基本说明" win-opentype="2" win-maxopen="-1" style="top: 192px; left: 0px;">
+                <div class="ant-icon ant-icon-font"><img class="ant-desk-icon" src="./img/gameui.png"></div>
+                <p>噶么ui</p>
+            </div>
+
+        </div>
+        <ant-taskbar></ant-taskbar>
+    </div>
+</body>
+<!-- import Vue before Element -->
+<script src="./lib/vue/vue.js"></script>
+<!-- import JavaScript -->
+<script src="./js/antWindow.js"></script>
+<script src="./js/antTaskbar.js"></script>
+<script src="./lib/element/index.js"></script>
+<script>
+    new Vue({
+        el: '#app',
+        data: function() {
+            return {
+                visible: false,
+
+            }
+        },
+        methods: {
+
+        }
+    })
+</script>
+
+</html>
